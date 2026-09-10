@@ -38,6 +38,7 @@ export function WheelScreen() {
   const [rotation, setRotation] = useState(0);
   const [spinning, setSpinning] = useState(false);
   const [resultado, setResultado] = useState<ResultadoGiro | null>(null);
+  const [error, setError] = useState(false);
   const timeoutsRef = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   const limpiarTimeouts = useCallback(() => {
@@ -45,14 +46,24 @@ export function WheelScreen() {
     timeoutsRef.current = [];
   }, []);
 
-  const handleGirar = useCallback(() => {
+  const handleGirar = useCallback(async () => {
     if (spinning || !listo) return;
-    const result = girar();
-    if (!result) return;
 
     limpiarTimeouts();
     setResultado(null);
+    setError(false);
+    // Se bloquea el botón ANTES de esperar la respuesta del servidor, no
+    // después, para evitar doble giro si alguien toca de nuevo mientras
+    // se resuelve la conexión (caso borde 7.5).
     setSpinning(true);
+
+    const result = await girar();
+    if (!result) {
+      setSpinning(false);
+      setError(true);
+      return;
+    }
+
     setRotation((prev) => computeNextRotation(prev, result.casilleroIndex));
 
     const t1 = setTimeout(() => {
@@ -90,7 +101,12 @@ export function WheelScreen() {
       </div>
 
       <div className="mt-10 min-h-[100px] max-w-[420px] text-center">
-        {resultado ? (
+        {error ? (
+          <>
+            <p className="font-serif text-2xl font-semibold text-olive">Uy, algo falló</p>
+            <p className="mt-1 text-sm text-secondary">Probá girar de nuevo en un momento.</p>
+          </>
+        ) : resultado ? (
           resultado.tipo === "vacio" ? (
             <>
               <p className="font-serif text-2xl font-semibold text-olive">¡Seguí participando!</p>
