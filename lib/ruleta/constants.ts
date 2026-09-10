@@ -55,8 +55,8 @@ export const COLOR_VACIO = "#E4D9C3";
 // Credenciales del panel admin. Un solo usuario, sin roles (sección 5.1 del análisis).
 // Cambiar antes de poner la tablet en producción.
 export const ADMIN_CREDENCIALES = {
-  usuario: "admin",
-  password: "resurge2026",
+  usuario: "ruleta",
+  password: "ruletaresurge",
 };
 
 export const SPIN_DURATION_MS = 4200;
