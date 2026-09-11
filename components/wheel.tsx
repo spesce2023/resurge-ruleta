@@ -38,19 +38,15 @@ export function Wheel({
   rotation,
   spinning,
   estadoPremiosMayores,
-  size = 480,
 }: {
   rotation: number;
   spinning: boolean;
   estadoPremiosMayores?: Record<PremioMayorId, EstadoPremioMayor>;
-  size?: number;
 }) {
   return (
     <svg
       viewBox="0 0 500 500"
-      width={size}
-      height={size}
-      className="max-w-full"
+      className="block h-full w-full"
       role="img"
       aria-label="Ruleta de premios"
     >

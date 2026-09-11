@@ -14,30 +14,38 @@ export function ProbabilidadesCard({
   onChange,
 }: {
   config: Config;
-  onChange: (config: Partial<Config>) => void;
+  onChange: (config: Partial<Config>) => void | Promise<void>;
 }) {
-  // El valor mostrado se maneja como texto local mientras se edita, en vez
-  // de reflejar directamente `config` (que ahora viene del servidor de
-  // forma asíncrona): si cada tecla disparara una request, una respuesta
-  // vieja podría llegar después de una más nueva y pisar lo que se acaba
-  // de tipear (por eso costaba borrar el 0 inicial). Se sincroniza desde
-  // el servidor solo cuando el campo no está siendo editado, y se guarda
-  // al salir del campo.
+  // El valor se maneja como texto local y NO se manda al servidor en cada
+  // tecla: se guarda recién al tocar "Guardar cambios". Esto permite usar
+  // el panel desde otro dispositivo (ej. el celular) mientras se juega en
+  // la tablet, sin depender de un blur/click fuera del campo para que el
+  // cambio se aplique.
   const [mayorText, setMayorText] = useState(String(config.probabilidadPremioMayor));
   const [normalText, setNormalText] = useState(String(config.probabilidadPremioNormal));
-  const [editandoMayor, setEditandoMayor] = useState(false);
-  const [editandoNormal, setEditandoNormal] = useState(false);
+  const [hayCambios, setHayCambios] = useState(false);
+  const [guardando, setGuardando] = useState(false);
+  const [guardado, setGuardado] = useState(false);
 
+  // Se sincroniza desde el servidor (ej. otro dispositivo cambió la config,
+  // o se hizo un reset) solo si no hay cambios sin guardar en este campo.
   useEffect(() => {
-    if (!editandoMayor) setMayorText(String(config.probabilidadPremioMayor));
-  }, [config.probabilidadPremioMayor, editandoMayor]);
+    if (hayCambios) return;
+    setMayorText(String(config.probabilidadPremioMayor));
+    setNormalText(String(config.probabilidadPremioNormal));
+  }, [config.probabilidadPremioMayor, config.probabilidadPremioNormal, hayCambios]);
 
-  useEffect(() => {
-    if (!editandoNormal) setNormalText(String(config.probabilidadPremioNormal));
-  }, [config.probabilidadPremioNormal, editandoNormal]);
-
-  function handleEnter(e: React.KeyboardEvent<HTMLInputElement>) {
-    if (e.key === "Enter") e.currentTarget.blur();
+  async function handleGuardar() {
+    setGuardando(true);
+    setGuardado(false);
+    await onChange({
+      probabilidadPremioMayor: commitValue(mayorText),
+      probabilidadPremioNormal: commitValue(normalText),
+    });
+    setHayCambios(false);
+    setGuardando(false);
+    setGuardado(true);
+    setTimeout(() => setGuardado(false), 2500);
   }
 
   return (
@@ -50,12 +58,9 @@ export function ProbabilidadesCard({
         min={0}
         max={100}
         value={mayorText}
-        onFocus={() => setEditandoMayor(true)}
-        onChange={(e) => setMayorText(e.target.value)}
-        onKeyDown={handleEnter}
-        onBlur={() => {
-          setEditandoMayor(false);
-          onChange({ probabilidadPremioMayor: commitValue(mayorText) });
+        onChange={(e) => {
+          setMayorText(e.target.value);
+          setHayCambios(true);
         }}
         className="mt-1 w-full rounded-lg border border-border bg-cream px-3 py-2 text-sm text-olive outline-none focus:border-sage"
       />
@@ -66,15 +71,24 @@ export function ProbabilidadesCard({
         min={0}
         max={100}
         value={normalText}
-        onFocus={() => setEditandoNormal(true)}
-        onChange={(e) => setNormalText(e.target.value)}
-        onKeyDown={handleEnter}
-        onBlur={() => {
-          setEditandoNormal(false);
-          onChange({ probabilidadPremioNormal: commitValue(normalText) });
+        onChange={(e) => {
+          setNormalText(e.target.value);
+          setHayCambios(true);
         }}
         className="mt-1 w-full rounded-lg border border-border bg-cream px-3 py-2 text-sm text-olive outline-none focus:border-sage"
       />
+
+      <div className="mt-4 flex items-center gap-3">
+        <button
+          type="button"
+          onClick={handleGuardar}
+          disabled={!hayCambios || guardando}
+          className="rounded-lg bg-sage-dark px-4 py-2 text-[12.5px] font-semibold text-cream disabled:opacity-50"
+        >
+          {guardando ? "Guardando…" : "Guardar cambios"}
+        </button>
+        {guardado && <span className="text-[12px] font-semibold text-sage-dark">Guardado ✓</span>}
+      </div>
 
       <p className="mt-3 text-[11.5px] text-secondary">
         Los cambios aplican solo a los próximos giros.

@@ -115,59 +115,63 @@ export function WheelScreen() {
   }, [spinning, listo, girar, limpiarTimeouts]);
 
   return (
-    <div className="flex min-h-screen flex-col items-center bg-cream px-4 py-8">
-      <header className="flex flex-col items-center gap-1 text-center">
+    <div className="flex min-h-screen flex-col items-center bg-cream px-4 py-6 landscape:py-4">
+      <header className="flex flex-col items-center gap-1 text-center landscape:flex-row landscape:gap-2">
         <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-secondary">
           Cafetería
         </span>
-        <BrandMark size={30} wordmarkSize="text-3xl" />
+        <BrandMark size={32} wordmarkSize="text-4xl" />
       </header>
 
-      <div className="relative mt-8 flex flex-col items-center">
-        <Wheel rotation={rotation} spinning={spinning} estadoPremiosMayores={state?.premiosMayores} size={440} />
-        <div className="pointer-events-none absolute left-1/2 top-[-6px] -translate-x-1/2 border-x-[10px] border-t-[16px] border-x-transparent border-t-olive" />
-        <button
-          type="button"
-          onClick={handleGirar}
-          disabled={spinning || !listo}
-          className="-mt-9 flex h-24 w-24 items-center justify-center rounded-full bg-sage-dark font-serif text-xl font-semibold text-cream shadow-lg transition-transform active:scale-95 disabled:opacity-60"
-        >
-          Girar
-        </button>
-      </div>
+      <div className="flex w-full flex-1 flex-col items-center justify-center gap-4 landscape:mx-auto landscape:max-w-6xl landscape:flex-row landscape:justify-around landscape:gap-6">
+        <div className="relative flex flex-col items-center">
+          <div className="relative aspect-square w-[clamp(300px,85vw,640px)] landscape:w-[clamp(280px,42vw,560px)]">
+            <Wheel rotation={rotation} spinning={spinning} estadoPremiosMayores={state?.premiosMayores} />
+            <div className="pointer-events-none absolute left-1/2 top-[-6px] -translate-x-1/2 border-x-[10px] border-t-[16px] border-x-transparent border-t-olive" />
+          </div>
+          <button
+            type="button"
+            onClick={handleGirar}
+            disabled={spinning || !listo}
+            className="-mt-10 flex h-28 w-28 items-center justify-center rounded-full bg-sage-dark font-serif text-2xl font-semibold text-cream shadow-lg transition-transform active:scale-95 disabled:opacity-60"
+          >
+            Girar
+          </button>
+        </div>
 
-      <div className="mt-10 flex min-h-[110px] max-w-[420px] flex-col items-center justify-center text-center">
-        {error ? (
-          <>
-            <p className="font-serif text-2xl font-semibold text-olive">Uy, algo falló</p>
-            <p className="mt-1 text-sm text-secondary">Probá girar de nuevo en un momento.</p>
-          </>
-        ) : fase === "girando" ? (
-          <span className="text-6xl" aria-hidden="true">
-            {cycleIcon}
-          </span>
-        ) : fase === "icono" && resultado ? (
-          <span className="text-6xl" aria-hidden="true">
-            {iconoResultado(resultado)}
-          </span>
-        ) : fase === "texto" && resultado ? (
-          resultado.tipo === "vacio" ? (
+        <div className="flex min-h-[160px] max-w-[480px] flex-1 flex-col items-center justify-center text-center">
+          {error ? (
             <>
-              <p className="font-serif text-2xl font-semibold text-olive">¡Seguí participando!</p>
-              <p className="mt-1 text-sm text-secondary">La próxima puede ser la tuya.</p>
+              <p className="font-serif text-4xl font-semibold text-olive">Uy, algo falló</p>
+              <p className="mt-2 text-lg text-secondary">Probá girar de nuevo en un momento.</p>
             </>
+          ) : fase === "girando" ? (
+            <span className="text-[7rem] leading-none" aria-hidden="true">
+              {cycleIcon}
+            </span>
+          ) : fase === "icono" && resultado ? (
+            <span className="text-[7rem] leading-none" aria-hidden="true">
+              {iconoResultado(resultado)}
+            </span>
+          ) : fase === "texto" && resultado ? (
+            resultado.tipo === "vacio" ? (
+              <>
+                <p className="font-serif text-4xl font-semibold text-olive">¡Seguí participando!</p>
+                <p className="mt-2 text-lg text-secondary">La próxima puede ser la tuya.</p>
+              </>
+            ) : (
+              <>
+                <p className="text-lg font-bold uppercase tracking-wide text-terracotta">¡Ganaste!</p>
+                <p className="mt-2 font-serif text-5xl font-semibold text-olive">{nombrePremio(resultado)}</p>
+              </>
+            )
           ) : (
             <>
-              <p className="text-sm font-bold uppercase tracking-wide text-terracotta">¡Ganaste!</p>
-              <p className="mt-1 font-serif text-3xl font-semibold text-olive">{nombrePremio(resultado)}</p>
+              <p className="font-serif text-4xl font-semibold text-olive">Probá tu suerte</p>
+              <p className="mt-2 text-lg text-secondary">Tocá el botón y descubrí tu premio</p>
             </>
-          )
-        ) : (
-          <>
-            <p className="font-serif text-2xl font-semibold text-olive">Probá tu suerte</p>
-            <p className="mt-1 text-sm text-secondary">Tocá el botón y descubrí tu premio</p>
-          </>
-        )}
+          )}
+        </div>
       </div>
 
       <Link
