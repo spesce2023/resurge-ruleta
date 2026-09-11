@@ -1,19 +1,27 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { BrandMark } from "@/components/brand";
 import { Wheel } from "./wheel";
 import { useRuleta } from "@/lib/ruleta/use-ruleta";
 import {
+  ICON_CYCLE_MS,
+  ICON_REVEAL_MS,
+  ICONO_VACIO,
+  ICONOS_PREMIOS_MAYORES,
+  ICONOS_PREMIOS_NORMALES,
   PREMIOS_MAYORES,
   PREMIOS_NORMALES,
   RESULT_DISPLAY_MS,
   SLICE_ANGLE,
   SPIN_DURATION_MS,
   SPIN_EXTRA_TURNS,
+  TODOS_LOS_ICONOS,
 } from "@/lib/ruleta/constants";
 import type { ResultadoGiro } from "@/lib/ruleta/types";
+
+type Fase = "idle" | "girando" | "icono" | "texto";
 
 function nombrePremio(resultado: ResultadoGiro): string {
   if (resultado.tipo === "mayor") {
@@ -23,6 +31,12 @@ function nombrePremio(resultado: ResultadoGiro): string {
     return PREMIOS_NORMALES.find((p) => p.id === resultado.premioId)?.nombre ?? "";
   }
   return "";
+}
+
+function iconoResultado(resultado: ResultadoGiro): string {
+  if (resultado.tipo === "mayor") return ICONOS_PREMIOS_MAYORES[resultado.premioId];
+  if (resultado.tipo === "normal") return ICONOS_PREMIOS_NORMALES[resultado.premioId];
+  return ICONO_VACIO;
 }
 
 function computeNextRotation(prevRotation: number, targetIndex: number) {
@@ -37,14 +51,26 @@ export function WheelScreen() {
   const { state, listo, girar } = useRuleta();
   const [rotation, setRotation] = useState(0);
   const [spinning, setSpinning] = useState(false);
+  const [fase, setFase] = useState<Fase>("idle");
   const [resultado, setResultado] = useState<ResultadoGiro | null>(null);
   const [error, setError] = useState(false);
+  const [cycleIcon, setCycleIcon] = useState(TODOS_LOS_ICONOS[0]);
   const timeoutsRef = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   const limpiarTimeouts = useCallback(() => {
     timeoutsRef.current.forEach(clearTimeout);
     timeoutsRef.current = [];
   }, []);
+
+  // Mientras gira, la zona de resultado hace un efecto tipo "tragamonedas":
+  // los íconos van cambiando rápido hasta que la rueda se detiene.
+  useEffect(() => {
+    if (fase !== "girando") return;
+    const id = setInterval(() => {
+      setCycleIcon(TODOS_LOS_ICONOS[Math.floor(Math.random() * TODOS_LOS_ICONOS.length)]);
+    }, ICON_CYCLE_MS);
+    return () => clearInterval(id);
+  }, [fase]);
 
   const handleGirar = useCallback(async () => {
     if (spinning || !listo) return;
@@ -56,26 +82,36 @@ export function WheelScreen() {
     // después, para evitar doble giro si alguien toca de nuevo mientras
     // se resuelve la conexión (caso borde 7.5).
     setSpinning(true);
+    setFase("girando");
 
     const result = await girar();
     if (!result) {
       setSpinning(false);
+      setFase("idle");
       setError(true);
       return;
     }
 
     setRotation((prev) => computeNextRotation(prev, result.casilleroIndex));
 
+    // Secuencia al detenerse: 1) se revela el ícono del premio ganador solo,
+    // 2) recién después aparece la frase "¡Ganaste! ..." / "¡Seguí participando!".
     const t1 = setTimeout(() => {
       setResultado(result);
+      setFase("icono");
     }, SPIN_DURATION_MS);
 
     const t2 = setTimeout(() => {
-      setResultado(null);
-      setSpinning(false);
-    }, SPIN_DURATION_MS + RESULT_DISPLAY_MS);
+      setFase("texto");
+    }, SPIN_DURATION_MS + ICON_REVEAL_MS);
 
-    timeoutsRef.current = [t1, t2];
+    const t3 = setTimeout(() => {
+      setResultado(null);
+      setFase("idle");
+      setSpinning(false);
+    }, SPIN_DURATION_MS + ICON_REVEAL_MS + RESULT_DISPLAY_MS);
+
+    timeoutsRef.current = [t1, t2, t3];
   }, [spinning, listo, girar, limpiarTimeouts]);
 
   return (
@@ -100,13 +136,21 @@ export function WheelScreen() {
         </button>
       </div>
 
-      <div className="mt-10 min-h-[100px] max-w-[420px] text-center">
+      <div className="mt-10 flex min-h-[110px] max-w-[420px] flex-col items-center justify-center text-center">
         {error ? (
           <>
             <p className="font-serif text-2xl font-semibold text-olive">Uy, algo falló</p>
             <p className="mt-1 text-sm text-secondary">Probá girar de nuevo en un momento.</p>
           </>
-        ) : resultado ? (
+        ) : fase === "girando" ? (
+          <span className="text-6xl" aria-hidden="true">
+            {cycleIcon}
+          </span>
+        ) : fase === "icono" && resultado ? (
+          <span className="text-6xl" aria-hidden="true">
+            {iconoResultado(resultado)}
+          </span>
+        ) : fase === "texto" && resultado ? (
           resultado.tipo === "vacio" ? (
             <>
               <p className="font-serif text-2xl font-semibold text-olive">¡Seguí participando!</p>

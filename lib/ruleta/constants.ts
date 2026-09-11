@@ -1,4 +1,11 @@
-import type { Casillero, Config, PremioMayorDef, PremioNormalDef } from "./types";
+import type {
+  Casillero,
+  Config,
+  PremioMayorDef,
+  PremioMayorId,
+  PremioNormalDef,
+  PremioNormalId,
+} from "./types";
 
 export const PREMIOS_MAYORES: PremioMayorDef[] = [
   { id: "merienda", nombre: "Merienda para dos" },
@@ -52,6 +59,31 @@ export const COLOR_MAYOR = "#B5652E";
 export const COLOR_NORMAL = "#6E7F52";
 export const COLOR_VACIO = "#E4D9C3";
 
+// Íconos por premio: se dibujan dentro de cada gajo de la ruleta (para que
+// no se vea vacía) y se muestran también en la zona de resultado.
+export const ICONOS_PREMIOS_MAYORES: Record<PremioMayorId, string> = {
+  merienda: "🍰",
+  "merienda-resurge": "🧁",
+  brunch: "🥞",
+};
+
+export const ICONOS_PREMIOS_NORMALES: Record<PremioNormalId, string> = {
+  "americano-medialuna": "🥐",
+  "capuchino-tostado": "🍞",
+  "postre-individual": "🍮",
+  "dos-bebidas-calientes": "☕",
+  "bebida-eleccion": "🥤",
+  scon: "🍪",
+};
+
+export const ICONO_VACIO = "🍀";
+
+export const TODOS_LOS_ICONOS: string[] = [
+  ...Object.values(ICONOS_PREMIOS_MAYORES),
+  ...Object.values(ICONOS_PREMIOS_NORMALES),
+  ICONO_VACIO,
+];
+
 // Credenciales del panel admin. Un solo usuario, sin roles (sección 5.1 del análisis).
 // Cambiar antes de poner la tablet en producción.
 export const ADMIN_CREDENCIALES = {
@@ -60,5 +92,7 @@ export const ADMIN_CREDENCIALES = {
 };
 
 export const SPIN_DURATION_MS = 4200;
+export const ICON_REVEAL_MS = 3000;
 export const RESULT_DISPLAY_MS = 6000;
+export const ICON_CYCLE_MS = 120;
 export const SPIN_EXTRA_TURNS = 6;
