@@ -19,7 +19,7 @@ export const PREMIOS_NORMALES: PremioNormalDef[] = [
   { id: "postre-individual", nombre: "Postre individual a elección" },
   { id: "dos-bebidas-calientes", nombre: "2 bebidas calientes a elección" },
   { id: "bebida-eleccion", nombre: "Bebida a elección" },
-  { id: "scon", nombre: "Scón" },
+  { id: "scon", nombre: "Bebida a elección y scón" },
 ];
 
 export const DEFAULT_CONFIG: Config = {
