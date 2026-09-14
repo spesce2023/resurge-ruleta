@@ -18,7 +18,6 @@ export const PREMIOS_NORMALES: PremioNormalDef[] = [
   { id: "capuchino-tostado", nombre: "Capuchino y tostado" },
   { id: "postre-individual", nombre: "Postre individual a elección" },
   { id: "dos-bebidas-calientes", nombre: "2 bebidas calientes a elección" },
-  { id: "bebida-eleccion", nombre: "Bebida a elección" },
   { id: "scon", nombre: "Bebida a elección y scón" },
 ];
 
@@ -33,7 +32,7 @@ export const SLICE_ANGLE = 360 / TOTAL_CASILLEROS;
 // Distribución fija de los 18 casilleros de la ruleta (3 mayores / 9 normales / 6 vacíos).
 // Ajustable a futuro: es la propuesta 3/9/6 marcada como pendiente de confirmación en el
 // documento de análisis (sección 1.3 / 10.1). Los 9 casilleros normales están repartidos de
-// forma desigual entre los 6 tipos (2/2/2/1/1/1) a modo de ejemplo de ponderación (sección 7.9).
+// forma desigual entre los 5 tipos (2/2/2/2/1) a modo de ejemplo de ponderación (sección 7.9).
 export const CASILLEROS: Casillero[] = [
   { index: 0, categoria: { tipo: "mayor", premioId: "merienda" } },
   { index: 1, categoria: { tipo: "normal", premioId: "americano-medialuna" } },
@@ -50,7 +49,7 @@ export const CASILLEROS: Casillero[] = [
   { index: 12, categoria: { tipo: "mayor", premioId: "brunch" } },
   { index: 13, categoria: { tipo: "normal", premioId: "dos-bebidas-calientes" } },
   { index: 14, categoria: { tipo: "vacio" } },
-  { index: 15, categoria: { tipo: "normal", premioId: "bebida-eleccion" } },
+  { index: 15, categoria: { tipo: "normal", premioId: "dos-bebidas-calientes" } },
   { index: 16, categoria: { tipo: "normal", premioId: "scon" } },
   { index: 17, categoria: { tipo: "vacio" } },
 ];
@@ -72,7 +71,6 @@ export const ICONOS_PREMIOS_NORMALES: Record<PremioNormalId, string> = {
   "capuchino-tostado": "🍞",
   "postre-individual": "🍮",
   "dos-bebidas-calientes": "☕",
-  "bebida-eleccion": "🥤",
   scon: "🍪",
 };
 

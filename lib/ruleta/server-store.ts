@@ -1,5 +1,5 @@
 import { Redis } from "@upstash/redis";
-import { estadoInicial } from "./storage";
+import { estadoInicial, normalizarEstado } from "./storage";
 import type { RuletaState } from "./types";
 
 const KEY = "resurge-ruleta-state-v1";
@@ -25,7 +25,7 @@ export async function readState(): Promise<RuletaState> {
   if (redis) {
     try {
       const state = await redis.get<RuletaState>(KEY);
-      return state ?? estadoInicial();
+      return normalizarEstado(state);
     } catch {
       // conexión caída: se sigue al fallback en memoria de esta instancia
     }

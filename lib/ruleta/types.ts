@@ -7,7 +7,6 @@ export type PremioNormalId =
   | "capuchino-tostado"
   | "postre-individual"
   | "dos-bebidas-calientes"
-  | "bebida-eleccion"
   | "scon";
 
 export interface PremioMayorDef {
