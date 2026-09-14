@@ -62,7 +62,7 @@ export const COLOR_VACIO = "#E4D9C3";
 // no se vea vacía) y se muestran también en la zona de resultado.
 export const ICONOS_PREMIOS_MAYORES: Record<PremioMayorId, string> = {
   merienda: "🍰",
-  "merienda-resurge": "🧁",
+  "merienda-resurge": "🥪",
   brunch: "🥞",
 };
 
