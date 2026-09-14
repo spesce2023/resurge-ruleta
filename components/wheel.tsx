@@ -10,7 +10,7 @@ import {
   ICONOS_PREMIOS_NORMALES,
   SLICE_ANGLE,
 } from "@/lib/ruleta/constants";
-import type { CasilleroCategoria, EstadoPremioMayor, PremioMayorId } from "@/lib/ruleta/types";
+import type { CasilleroCategoria } from "@/lib/ruleta/types";
 
 function polarPoint(cx: number, cy: number, r: number, angleDeg: number) {
   const rad = ((angleDeg - 90) * Math.PI) / 180;
@@ -37,11 +37,9 @@ const ICON_RADIUS = 175;
 export function Wheel({
   rotation,
   spinning,
-  estadoPremiosMayores,
 }: {
   rotation: number;
   spinning: boolean;
-  estadoPremiosMayores?: Record<PremioMayorId, EstadoPremioMayor>;
 }) {
   return (
     <svg
@@ -67,11 +65,8 @@ export function Wheel({
           const p2 = polarPoint(CX, CY, R, end);
           const path = `M ${CX} ${CY} L ${p1.x} ${p1.y} A ${R} ${R} 0 0 1 ${p2.x} ${p2.y} Z`;
           const iconPos = polarPoint(CX, CY, ICON_RADIUS, centerAngle);
-          const agotado =
-            casillero.categoria.tipo === "mayor" &&
-            estadoPremiosMayores?.[casillero.categoria.premioId] !== "disponible";
           return (
-            <g key={casillero.index} opacity={agotado ? 0.35 : 1}>
+            <g key={casillero.index}>
               <path d={path} fill={colorDeCasillero(casillero.categoria)} stroke="#F7F0E4" strokeWidth={2} />
               <text
                 x={iconPos.x}

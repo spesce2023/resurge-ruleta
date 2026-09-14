@@ -48,7 +48,7 @@ function computeNextRotation(prevRotation: number, targetIndex: number) {
 }
 
 export function WheelScreen() {
-  const { state, listo, girar } = useRuleta();
+  const { listo, girar } = useRuleta();
   const [rotation, setRotation] = useState(0);
   const [spinning, setSpinning] = useState(false);
   const [fase, setFase] = useState<Fase>("idle");
@@ -126,7 +126,7 @@ export function WheelScreen() {
       <div className="flex w-full flex-1 flex-col items-center justify-center gap-4 landscape:mx-auto landscape:max-w-6xl landscape:flex-row landscape:justify-around landscape:gap-6">
         <div className="relative flex flex-col items-center">
           <div className="relative aspect-square w-[clamp(300px,85vw,640px)] landscape:w-[clamp(280px,42vw,560px)]">
-            <Wheel rotation={rotation} spinning={spinning} estadoPremiosMayores={state?.premiosMayores} />
+            <Wheel rotation={rotation} spinning={spinning} />
             <div className="pointer-events-none absolute left-1/2 top-[-6px] -translate-x-1/2 border-x-[10px] border-t-[16px] border-x-transparent border-t-olive" />
           </div>
           <button
