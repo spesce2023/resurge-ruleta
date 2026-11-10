@@ -14,7 +14,7 @@ export const PREMIOS_MAYORES: PremioMayorDef[] = [
 ];
 
 export const PREMIOS_NORMALES: PremioNormalDef[] = [
-  { id: "americano-medialuna", nombre: "Americano y medialuna" },
+  { id: "lunch-navideno", nombre: "15% off en lunch navideño" },
   { id: "capuchino-tostado", nombre: "Capuchino y tostado" },
   { id: "postre-individual", nombre: "Postre individual a elección" },
   { id: "dos-bebidas-calientes", nombre: "2 bebidas calientes a elección" },
@@ -35,9 +35,9 @@ export const SLICE_ANGLE = 360 / TOTAL_CASILLEROS;
 // forma desigual entre los 5 tipos (2/2/2/2/1) a modo de ejemplo de ponderación (sección 7.9).
 export const CASILLEROS: Casillero[] = [
   { index: 0, categoria: { tipo: "mayor", premioId: "merienda" } },
-  { index: 1, categoria: { tipo: "normal", premioId: "americano-medialuna" } },
+  { index: 1, categoria: { tipo: "normal", premioId: "lunch-navideno" } },
   { index: 2, categoria: { tipo: "vacio" } },
-  { index: 3, categoria: { tipo: "normal", premioId: "americano-medialuna" } },
+  { index: 3, categoria: { tipo: "normal", premioId: "lunch-navideno" } },
   { index: 4, categoria: { tipo: "normal", premioId: "capuchino-tostado" } },
   { index: 5, categoria: { tipo: "vacio" } },
   { index: 6, categoria: { tipo: "mayor", premioId: "merienda-resurge" } },
@@ -67,7 +67,7 @@ export const ICONOS_PREMIOS_MAYORES: Record<PremioMayorId, string> = {
 };
 
 export const ICONOS_PREMIOS_NORMALES: Record<PremioNormalId, string> = {
-  "americano-medialuna": "🥐",
+  "lunch-navideno": "🎄",
   "capuchino-tostado": "🍞",
   "postre-individual": "🍮",
   "dos-bebidas-calientes": "☕",

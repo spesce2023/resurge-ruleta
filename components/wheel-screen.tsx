@@ -216,6 +216,7 @@ export function WheelScreen() {
               <>
                 <p className="text-lg font-bold uppercase tracking-wide text-terracotta">¡Ganaste!</p>
                 <p className="mt-2 font-serif text-5xl font-semibold text-olive">{nombrePremio(resultado)}</p>
+                <p className="mt-3 text-lg text-secondary">Para tu próxima visita</p>
               </>
             )
           ) : (

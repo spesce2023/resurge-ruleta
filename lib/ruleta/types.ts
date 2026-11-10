@@ -3,7 +3,7 @@ export type PremioMayorId = "merienda" | "merienda-resurge" | "brunch";
 export type EstadoPremioMayor = "disponible" | "pendiente" | "entregado";
 
 export type PremioNormalId =
-  | "americano-medialuna"
+  | "lunch-navideno"
   | "capuchino-tostado"
   | "postre-individual"
   | "dos-bebidas-calientes"
