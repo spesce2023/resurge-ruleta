@@ -34,28 +34,17 @@ const CY = 250;
 const R = 240;
 const ICON_RADIUS = 175;
 
-export function Wheel({
-  rotation,
-  spinning,
-}: {
-  rotation: number;
-  spinning: boolean;
-}) {
+// La rotación NO es una prop: quien usa el componente le aplica
+// `style.transform` al div de `rotorRef` en cada fotograma de la animación.
+// Así no se re-renderiza el SVG 60 veces por segundo mientras gira.
+export function Wheel({ rotorRef }: { rotorRef: React.RefObject<HTMLDivElement> }) {
   return (
-    <svg
-      viewBox="0 0 500 500"
-      className="block h-full w-full"
-      role="img"
-      aria-label="Ruleta de premios"
-    >
-      <g
-        style={{
-          transform: `rotate(${rotation}deg)`,
-          transformOrigin: "250px 250px",
-          transition: spinning
-            ? "transform 4.2s cubic-bezier(0.12, 0.72, 0.1, 1)"
-            : undefined,
-        }}
+    <div ref={rotorRef} className="h-full w-full will-change-transform">
+      <svg
+        viewBox="0 0 500 500"
+        className="block h-full w-full"
+        role="img"
+        aria-label="Ruleta de premios"
       >
         {CASILLEROS.map((casillero) => {
           const start = casillero.index * SLICE_ANGLE;
@@ -81,7 +70,7 @@ export function Wheel({
           );
         })}
         <circle cx={CX} cy={CY} r={26} fill="#F7F0E4" />
-      </g>
-    </svg>
+      </svg>
+    </div>
   );
 }

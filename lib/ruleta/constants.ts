@@ -89,8 +89,12 @@ export const ADMIN_CREDENCIALES = {
   password: "ruletaresurge",
 };
 
-export const SPIN_DURATION_MS = 4200;
+// La rueda gira a velocidad constante apenas se toca "Girar" y frena sobre el
+// casillero ganador cuando llega el resultado. El frenado recorre como mínimo
+// GIRO_MIN_FRENADO_GRADOS para que se note la desaceleración.
+export const GIRO_LIBRE_GRADOS_POR_SEG = 720;
+export const GIRO_MIN_FRENADO_GRADOS = 800;
+export const FRENADO_ERROR_MS = 600;
 export const ICON_REVEAL_MS = 3000;
 export const RESULT_DISPLAY_MS = 6000;
 export const ICON_CYCLE_MS = 120;
-export const SPIN_EXTRA_TURNS = 6;

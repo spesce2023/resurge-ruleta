@@ -6,6 +6,7 @@ import { BrandMark } from "@/components/brand";
 import { Wheel } from "./wheel";
 import { useRuleta } from "@/lib/ruleta/use-ruleta";
 import {
+  GIRO_LIBRE_GRADOS_POR_SEG,
   ICON_CYCLE_MS,
   ICON_REVEAL_MS,
   ICONO_VACIO,
@@ -14,11 +15,9 @@ import {
   PREMIOS_MAYORES,
   PREMIOS_NORMALES,
   RESULT_DISPLAY_MS,
-  SLICE_ANGLE,
-  SPIN_DURATION_MS,
-  SPIN_EXTRA_TURNS,
   TODOS_LOS_ICONOS,
 } from "@/lib/ruleta/constants";
+import { calcularFrenado, calcularFrenadoSuave } from "@/lib/ruleta/spin";
 import type { ResultadoGiro } from "@/lib/ruleta/types";
 
 type Fase = "idle" | "girando" | "icono" | "texto";
@@ -39,28 +38,79 @@ function iconoResultado(resultado: ResultadoGiro): string {
   return ICONO_VACIO;
 }
 
-function computeNextRotation(prevRotation: number, targetIndex: number) {
-  const targetCenterAngle = targetIndex * SLICE_ANGLE + SLICE_ANGLE / 2;
-  const currentMod = ((prevRotation % 360) + 360) % 360;
-  const desiredMod = ((360 - targetCenterAngle) % 360 + 360) % 360;
-  const delta = ((desiredMod - currentMod) % 360 + 360) % 360;
-  return prevRotation + SPIN_EXTRA_TURNS * 360 + delta;
-}
-
 export function WheelScreen() {
   const { listo, girar } = useRuleta();
-  const [rotation, setRotation] = useState(0);
   const [spinning, setSpinning] = useState(false);
   const [fase, setFase] = useState<Fase>("idle");
   const [resultado, setResultado] = useState<ResultadoGiro | null>(null);
   const [error, setError] = useState(false);
   const [cycleIcon, setCycleIcon] = useState(TODOS_LOS_ICONOS[0]);
   const timeoutsRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const rotorRef = useRef<HTMLDivElement>(null);
+  const anguloRef = useRef(0);
+  const rafRef = useRef<number | null>(null);
+  // Se chequea de forma síncrona (a diferencia del estado) para que dos toques
+  // seguidos antes del siguiente render no arranquen dos giros (caso borde 7.5).
+  const ocupadoRef = useRef(false);
 
   const limpiarTimeouts = useCallback(() => {
     timeoutsRef.current.forEach(clearTimeout);
     timeoutsRef.current = [];
   }, []);
+
+  const detenerAnimacion = useCallback(() => {
+    if (rafRef.current !== null) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    }
+  }, []);
+
+  const aplicarAngulo = useCallback((grados: number) => {
+    anguloRef.current = grados;
+    if (rotorRef.current) rotorRef.current.style.transform = `rotate(${grados}deg)`;
+  }, []);
+
+  // Giro a velocidad constante, desde el instante del toque y hasta que llega
+  // el resultado del servidor (que puede tardar un poco).
+  const iniciarGiroLibre = useCallback(() => {
+    detenerAnimacion();
+    let ultimo = performance.now();
+    const paso = (ahora: number) => {
+      const dt = Math.max(0, ahora - ultimo);
+      ultimo = ahora;
+      aplicarAngulo(anguloRef.current + (GIRO_LIBRE_GRADOS_POR_SEG * dt) / 1000);
+      rafRef.current = requestAnimationFrame(paso);
+    };
+    rafRef.current = requestAnimationFrame(paso);
+  }, [aplicarAngulo, detenerAnimacion]);
+
+  const frenar = useCallback(
+    (delta: number, durMs: number, alTerminar: () => void) => {
+      detenerAnimacion();
+      const desde = anguloRef.current;
+      const t0 = performance.now();
+      const paso = (ahora: number) => {
+        const t = Math.min(1, Math.max(0, (ahora - t0) / durMs));
+        aplicarAngulo(desde + delta * (1 - Math.pow(1 - t, 3)));
+        if (t < 1) {
+          rafRef.current = requestAnimationFrame(paso);
+        } else {
+          rafRef.current = null;
+          alTerminar();
+        }
+      };
+      rafRef.current = requestAnimationFrame(paso);
+    },
+    [aplicarAngulo, detenerAnimacion]
+  );
+
+  useEffect(
+    () => () => {
+      detenerAnimacion();
+      limpiarTimeouts();
+    },
+    [detenerAnimacion, limpiarTimeouts]
+  );
 
   // Mientras gira, la zona de resultado hace un efecto tipo "tragamonedas":
   // los íconos van cambiando rápido hasta que la rueda se detiene.
@@ -73,46 +123,49 @@ export function WheelScreen() {
   }, [fase]);
 
   const handleGirar = useCallback(async () => {
-    if (spinning || !listo) return;
+    if (ocupadoRef.current || !listo) return;
+    ocupadoRef.current = true;
 
     limpiarTimeouts();
     setResultado(null);
     setError(false);
-    // Se bloquea el botón ANTES de esperar la respuesta del servidor, no
-    // después, para evitar doble giro si alguien toca de nuevo mientras
-    // se resuelve la conexión (caso borde 7.5).
     setSpinning(true);
     setFase("girando");
+    // La rueda arranca YA, en el mismo momento que los íconos, sin esperar
+    // la respuesta del servidor.
+    iniciarGiroLibre();
 
     const result = await girar();
+
     if (!result) {
-      setSpinning(false);
-      setFase("idle");
-      setError(true);
+      const { delta, durMs } = calcularFrenadoSuave();
+      frenar(delta, durMs, () => {
+        setSpinning(false);
+        setFase("idle");
+        setError(true);
+        ocupadoRef.current = false;
+      });
       return;
     }
 
-    setRotation((prev) => computeNextRotation(prev, result.casilleroIndex));
-
-    // Secuencia al detenerse: 1) se revela el ícono del premio ganador solo,
-    // 2) recién después aparece la frase "¡Ganaste! ..." / "¡Seguí participando!".
-    const t1 = setTimeout(() => {
+    // Llegó el resultado: la rueda frena exactamente sobre el casillero ganador.
+    // Al detenerse: 1) se revela el ícono del premio ganador solo, 2) recién
+    // después aparece la frase "¡Ganaste! ..." / "¡Seguí participando!".
+    const { delta, durMs } = calcularFrenado(anguloRef.current, result.casilleroIndex);
+    frenar(delta, durMs, () => {
       setResultado(result);
       setFase("icono");
-    }, SPIN_DURATION_MS);
 
-    const t2 = setTimeout(() => {
-      setFase("texto");
-    }, SPIN_DURATION_MS + ICON_REVEAL_MS);
-
-    const t3 = setTimeout(() => {
-      setResultado(null);
-      setFase("idle");
-      setSpinning(false);
-    }, SPIN_DURATION_MS + ICON_REVEAL_MS + RESULT_DISPLAY_MS);
-
-    timeoutsRef.current = [t1, t2, t3];
-  }, [spinning, listo, girar, limpiarTimeouts]);
+      const t1 = setTimeout(() => setFase("texto"), ICON_REVEAL_MS);
+      const t2 = setTimeout(() => {
+        setResultado(null);
+        setFase("idle");
+        setSpinning(false);
+        ocupadoRef.current = false;
+      }, ICON_REVEAL_MS + RESULT_DISPLAY_MS);
+      timeoutsRef.current = [t1, t2];
+    });
+  }, [listo, girar, limpiarTimeouts, iniciarGiroLibre, frenar]);
 
   return (
     <div className="flex min-h-screen flex-col items-center bg-cream px-4 py-6 landscape:py-4">
@@ -126,7 +179,7 @@ export function WheelScreen() {
       <div className="flex w-full flex-1 flex-col items-center justify-center gap-4 landscape:mx-auto landscape:max-w-6xl landscape:flex-row landscape:justify-around landscape:gap-6">
         <div className="relative flex flex-col items-center">
           <div className="relative aspect-square w-[clamp(300px,85vw,640px)] landscape:w-[clamp(280px,42vw,560px)]">
-            <Wheel rotation={rotation} spinning={spinning} />
+            <Wheel rotorRef={rotorRef} />
             <div className="pointer-events-none absolute left-1/2 top-[-6px] -translate-x-1/2 border-x-[10px] border-t-[16px] border-x-transparent border-t-olive" />
           </div>
           <button
