@@ -6,7 +6,7 @@ export type PremioNormalId =
   | "lunch-navideno"
   | "capuchino-tostado"
   | "postre-individual"
-  | "dos-bebidas-calientes"
+  | "pan-dulce"
   | "scon";
 
 export interface PremioMayorDef {
@@ -17,6 +17,9 @@ export interface PremioMayorDef {
 export interface PremioNormalDef {
   id: PremioNormalId;
   nombre: string;
+  // Premio que se entrega como vale para usar cuando el cliente quiera: en la
+  // pantalla de resultado NO se aclara "Para tu próxima visita".
+  esVale?: boolean;
 }
 
 export type CasilleroCategoria =

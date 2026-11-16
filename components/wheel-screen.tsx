@@ -32,6 +32,13 @@ function nombrePremio(resultado: ResultadoGiro): string {
   return "";
 }
 
+function esProximaVisita(resultado: ResultadoGiro): boolean {
+  if (resultado.tipo === "normal") {
+    return !PREMIOS_NORMALES.find((p) => p.id === resultado.premioId)?.esVale;
+  }
+  return resultado.tipo === "mayor";
+}
+
 function iconoResultado(resultado: ResultadoGiro): string {
   if (resultado.tipo === "mayor") return ICONOS_PREMIOS_MAYORES[resultado.premioId];
   if (resultado.tipo === "normal") return ICONOS_PREMIOS_NORMALES[resultado.premioId];
@@ -216,7 +223,9 @@ export function WheelScreen() {
               <>
                 <p className="text-lg font-bold uppercase tracking-wide text-terracotta">¡Ganaste!</p>
                 <p className="mt-2 font-serif text-5xl font-semibold text-olive">{nombrePremio(resultado)}</p>
-                <p className="mt-3 text-lg text-secondary">Para tu próxima visita</p>
+                {esProximaVisita(resultado) && (
+                  <p className="mt-3 text-lg text-secondary">Para tu próxima visita</p>
+                )}
               </>
             )
           ) : (

@@ -14,10 +14,10 @@ export const PREMIOS_MAYORES: PremioMayorDef[] = [
 ];
 
 export const PREMIOS_NORMALES: PremioNormalDef[] = [
-  { id: "lunch-navideno", nombre: "15% off en lunch navideño" },
+  { id: "lunch-navideno", nombre: "10% en lunch navideño", esVale: true },
   { id: "capuchino-tostado", nombre: "Capuchino y tostado" },
   { id: "postre-individual", nombre: "Postre individual a elección" },
-  { id: "dos-bebidas-calientes", nombre: "2 bebidas calientes a elección" },
+  { id: "pan-dulce", nombre: "15% off en pan dulce", esVale: true },
   { id: "scon", nombre: "Bebida a elección y scón" },
 ];
 
@@ -47,9 +47,9 @@ export const CASILLEROS: Casillero[] = [
   { index: 10, categoria: { tipo: "normal", premioId: "postre-individual" } },
   { index: 11, categoria: { tipo: "vacio" } },
   { index: 12, categoria: { tipo: "mayor", premioId: "brunch" } },
-  { index: 13, categoria: { tipo: "normal", premioId: "dos-bebidas-calientes" } },
+  { index: 13, categoria: { tipo: "normal", premioId: "pan-dulce" } },
   { index: 14, categoria: { tipo: "vacio" } },
-  { index: 15, categoria: { tipo: "normal", premioId: "dos-bebidas-calientes" } },
+  { index: 15, categoria: { tipo: "normal", premioId: "pan-dulce" } },
   { index: 16, categoria: { tipo: "normal", premioId: "scon" } },
   { index: 17, categoria: { tipo: "vacio" } },
 ];
@@ -70,7 +70,7 @@ export const ICONOS_PREMIOS_NORMALES: Record<PremioNormalId, string> = {
   "lunch-navideno": "🎄",
   "capuchino-tostado": "🍞",
   "postre-individual": "🍮",
-  "dos-bebidas-calientes": "☕",
+  "pan-dulce": "🎅",
   scon: "🍪",
 };
 
